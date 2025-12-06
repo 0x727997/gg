@@ -1,1 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>FastFlag Editor</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app-container">
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" id="sidebar-toggle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 12H21M3 6H21M3 18H21" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+        
+        <nav class="sidebar-nav">
+            <a href="#" class="sidebar-item" data-section="clash-macro">
+                <span class="sidebar-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                <span class="sidebar-text">Clash Macro</span>
+            </a>
+            <a href="#" class="sidebar-item" data-section="curve-macro">
+                <span class="sidebar-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 18C5.5 15 8.5 15 11 18C13.5 21 16.5 21 19 18M3 12C5.5 9 8.5 9 11 12C13.5 15 16.5 15 19 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                <span class="sidebar-text">Curve Macro</span>
+            </a>
+            <a href="#" class="sidebar-item active" data-section="fastflag-editor">
+                <span class="sidebar-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 3L3 21L12 17L21 21L19 3H5Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                <span class="sidebar-text">FastFlag Editor</span>
+            </a>
+            <a href="#" class="sidebar-item" data-section="fflag-registry">
+                <span class="sidebar-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 3H21V21H8V3Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3 7H8M3 12H8M3 17H8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </span>
+                <span class="sidebar-text">FFlag Registry</span>
+            </a>
+            <a href="#" class="sidebar-item" data-section="settings">
+                <span class="sidebar-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2"/>
+                        <path d="M19.4 15C19.1277 15.6171 19.2583 16.3378 19.73 16.82L19.79 16.88C20.1656 17.2551 20.3766 17.7642 20.3766 18.295C20.3766 18.8258 20.1656 19.3349 19.79 19.71C19.4149 20.0856 18.9058 20.2966 18.375 20.2966C17.8442 20.2966 17.3351 20.0856 16.96 19.71L16.9 19.65C16.4178 19.1783 15.6971 19.0477 15.08 19.32C14.4755 19.5791 14.0826 20.1724 14.08 20.83V21C14.08 22.1046 13.1846 23 12.08 23C10.9754 23 10.08 22.1046 10.08 21V20.91C10.0642 20.2327 9.63587 19.6339 8.99999 19.4C8.38291 19.1277 7.66219 19.2583 7.17999 19.73L7.11999 19.79C6.74494 20.1656 6.23584 20.3766 5.70499 20.3766C5.17414 20.3766 4.66504 20.1656 4.28999 19.79C3.91445 19.4149 3.70343 18.9058 3.70343 18.375C3.70343 17.8442 3.91445 17.3351 4.28999 16.96L4.34999 16.9C4.82171 16.4178 4.95232 15.6971 4.67999 15.08C4.42092 14.4755 3.82764 14.0826 3.16999 14.08H2.99999C1.89542 14.08 0.999992 13.1846 0.999992 12.08C0.999992 10.9754 1.89542 10.08 2.99999 10.08H3.08999C3.76732 10.0642 4.36612 9.63587 4.59999 9C4.87232 8.38291 4.74171 7.66219 4.26999 7.18L4.20999 7.12C3.83445 6.74494 3.62343 6.23584 3.62343 5.705C3.62343 5.17414 3.83445 4.66504 4.20999 4.29C4.58504 3.91445 5.09414 3.70343 5.62499 3.70343C6.15584 3.70343 6.66494 3.91445 7.03999 4.29L7.09999 4.35C7.58219 4.82171 8.30291 4.95232 8.91999 4.68C9.52447 4.42092 9.91739 3.82764 9.91999 3.17V3C9.91999 1.89543 10.8154 1 11.92 1C13.0246 1 13.92 1.89543 13.92 3V3.09C13.9226 3.74764 14.3155 4.34092 14.92 4.6C15.5371 4.87232 16.2578 4.74171 16.74 4.27L16.8 4.21C17.1751 3.83445 17.6842 3.62343 18.215 3.62343C18.7458 3.62343 19.2549 3.83445 19.63 4.21C20.0056 4.58504 20.2166 5.09414 20.2166 5.625C20.2166 6.15584 20.0056 6.66494 19.63 7.04L19.57 7.1C19.0983 7.58219 18.9677 8.30291 19.24 8.92C19.4991 9.52447 20.0924 9.91739 20.75 9.92H20.92C22.0246 9.92 22.92 10.8154 22.92 11.92C22.92 13.0246 22.0246 13.92 20.92 13.92H20.83C20.1724 13.9226 19.5791 14.3155 19.32 14.92L19.4 15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                <span class="sidebar-text">Settings</span>
+            </a>
+        </nav>
+    </div>
 
+    <!-- MAIN CONTENT AREA -->
+    <div class="main-card">
+        <!-- FASTFLAG EDITOR SECTION -->
+        <div class="section-page" id="fastflag-editor" style="display: flex;">
+            <section class="title-section">
+                <div>
+                    <h1 class="title">FastFlag Editor</h1>
+                    <p class="subtitle">
+                        Manage your FastFlags here. Check out more features in Advanced Settings
+                    </p>
+                </div>
+                
+                <div class="window-controls">
+                    <button id="min-btn" class="window-btn">−</button>
+                    <button id="max-btn" class="window-btn">□</button>
+                    <button id="close-btn" class="window-btn close-btn">×</button>
+                </div>
+            </section>
+
+            <section class="row row-gap">
+                <div class="btn-group">
+                    <button class="btn btn-primary">Add New</button>
+                    <button class="btn btn-ghost">Delete selected</button>
+                    <button class="btn btn-ghost">Delete All</button>
+                    <button class="btn btn-ghost">Copy All</button>
+                    <button class="btn btn-ghost">Export JSON</button>
+                </div>
+                <div class="btn-group right">
+                    <button class="btn btn-ghost">Profiles</button>
+                    <button class="btn btn-ghost">Advanced Settings</button>
+                </div>
+            </section>
+
+            <section class="row row-gap">
+                <div class="btn-group">
+                    <button class="btn btn-ghost">Clean FastFlag List</button>
+                    <button class="btn btn-ghost">Show Preset Flags</button>
+                </div>
+                <div class="row-flex-filler"></div>
+            </section>
+
+            <section class="row search-row">
+                <div class="search-wrapper">
+                    <input type="text" id="search" placeholder="Search" />
+                </div>
+                <div class="total-flags">
+                    Total Flags: <span id="total-flags">0</span>
+                </div>
+            </section>
+
+            <section class="table-wrapper">
+                <table id="flags-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+
+            <section class="bottom-bar">
+                <label class="test-mode">
+                    <input type="checkbox" />
+                    <span>Test Mode</span>
+                </label>
+
+                <div class="bottom-buttons">
+                    <button class="btn btn-bottom-primary">Save and Launch</button>
+                    <button class="btn btn-bottom-secondary">Restart</button>
+                    <button class="btn btn-bottom-secondary">Save</button>
+                    <button class="btn btn-bottom-secondary">Close</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- CLASH MACRO SECTION -->
+        <div class="section-page" id="clash-macro" style="display: none;">
+            <section class="title-section">
+                <div>
+                    <h1 class="title">Clash Macro</h1>
+                    <p class="subtitle">Auto-clicker configuration for clash mechanics</p>
+                </div>
+                
+                <div class="window-controls">
+                    <button class="window-btn min-btn">−</button>
+                    <button class="window-btn max-btn">□</button>
+                    <button class="window-btn close-btn">×</button>
+                </div>
+            </section>
+
+            <section class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">ACTIVE CLICKERS</div>
+                    <div class="stat-value">0</div>
+                    <div class="stat-status">
+                        <span class="status-dot"></span>
+                        <span>None</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">TOTAL CLICKERS</div>
+                    <div class="stat-value">1</div>
+                    <div class="stat-status">
+                        <span class="status-dot status-active"></span>
+                        <span>Available</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">STATUS</div>
+                    <div class="stat-value status-text">Idle</div>
+                </div>
+            </section>
+
+            <section class="macro-section">
+                <h2 class="section-title">Macro</h2>
+                
+                <div class="macro-controls">
+                    <div class="macro-left">
+                        <div class="control-row">
+                            <div class="control-group">
+                                <label class="control-label">CPS (Clicks Per Second)</label>
+                                <input type="number" class="control-input" id="cps-input" min="1" max="100" value="10" placeholder="Enter CPS">
+                            </div>
+                            
+                            <div class="control-group">
+                                <label class="control-label">Mode</label>
+                                <select class="control-select">
+                                    <option>Hold</option>
+                                    <option>Toggle</option>
+                                    <option>Click</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="button-row">
+                            <button class="btn btn-start" id="start-macro-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5 3L19 12L5 21V3Z" fill="currentColor"/>
+                                </svg>
+                                Start
+                            </button>
+                            <button class="btn btn-ghost" id="set-hotkey-btn">Set Hotkey</button>
+                        </div>
+                    </div>
+
+                    <div class="macro-right">
+                        <div class="control-group">
+                            <label class="control-label"></label>
+                            <button class="control-select keybind-display" id="keybind-display">None</button>
+                        </div>
+                    </div>
+
+                    <div class="log-section">
+                        <div class="log-header">
+                            <h3 class="log-title">Log</h3>
+                            <label class="log-toggle">
+                                <span>Add Step</span>
+                                <input type="checkbox" class="toggle-input">
+                                <span class="toggle-switch"></span>
+                            </label>
+                        </div>
+                        <div class="log-content">
+                            <p class="log-empty">No log entries yet</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SETTINGS SECTION -->
+        <div class="section-page" id="settings" style="display: none;">
+            <section class="title-section">
+                <div>
+                    <h1 class="title">Settings</h1>
+                    <p class="subtitle">Change deployment and installation settings for Roblox & Nerve.</p>
+                </div>
+                
+                <div class="window-controls">
+                    <button class="window-btn min-btn">−</button>
+                    <button class="window-btn max-btn">□</button>
+                    <button class="window-btn close-btn">×</button>
+                </div>
+            </section>
+
+            <div class="settings-content">
+                <div class="settings-category">
+                    <h2 class="category-title">Nerve</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-title">Automatically Update Nerve</div>
+                            <div class="setting-desc">Nerve will automatically check and update itself when launching Roblox.</div>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" checked />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-title">Disable Hardware Acceleration</div>
+                            <div class="setting-desc">Disables hardware acceleration on Nerve only. Note: You must restart the application in order to see any effects.</div>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-category">
+                    <h2 class="category-title">Roblox</h2>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-title">Force Roblox Reinstallation</div>
+                            <div class="setting-desc">Roblox will be installed fresh on next launch.</div>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-title">Roblox Upgrades</div>
+                            <div class="setting-desc">When disabled, Roblox client won't upgrade to newer versions.</div>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" checked />
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <section class="settings-bottom">
+                <button class="btn btn-ghost">Uninstall Nerve</button>
+                <button class="btn btn-ghost">Reset Settings To Default</button>
+                <button class="btn btn-ghost">Import Settings</button>
+                <button class="btn btn-ghost">Export Settings</button>
+            </section>
+        </div>
+
+        <!-- CURVE MACRO SECTION -->
+        <div class="section-page" id="curve-macro" style="display: none;">
+            <section class="title-section">
+                <div>
+                    <h1 class="title">Curve Macro</h1>
+                    <p class="subtitle">Advanced mouse movement automation</p>
+                </div>
+                
+                <div class="window-controls">
+                    <button class="window-btn min-btn">−</button>
+                    <button class="window-btn max-btn">□</button>
+                    <button class="window-btn close-btn">×</button>
+                </div>
+            </section>
+            
+            <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #666;">
+                <p>Curve Macro - Coming Soon</p>
+            </div>
+        </div>
+
+        <!-- FFLAG REGISTRY SECTION -->
+        <div class="section-page" id="fflag-registry" style="display: none;">
+            <section class="title-section">
+                <div>
+                    <h1 class="title">FFlag Registry</h1>
+                    <p class="subtitle">Browse and manage FastFlag registry</p>
+                </div>
+                
+                <div class="window-controls">
+                    <button class="window-btn min-btn">−</button>
+                    <button class="window-btn max-btn">□</button>
+                    <button class="window-btn close-btn">×</button>
+                </div>
+            </section>
+            
+            <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #666;">
+                <p>FFlag Registry - Coming Soon</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
