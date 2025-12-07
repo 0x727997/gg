@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pulsestrapper - Authentication</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+}
+
+.auth-container {
+    width: 500px;
+    background: #0c0c0c;
+    border-radius: 20px;
+    border: 1px solid #141414;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+    overflow: hidden;
+    animation: authOpen 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes authOpen {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(30px);
+        filter: blur(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: blur(0);
+    }
+}
+
+.auth-header {
+    padding: 40px 40px 30px 40px;
+    text-align: center;
+    border-bottom: 1px solid #141414;
+}
+
+.logo-section {
+    margin-bottom: 20px;
+}
+
+.logo-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #ffcd63, #ff9b00);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+    box-shadow: 0 0 20px rgba(255, 179, 0, 0.4);
+}
+
+.logo-icon svg {
+    width: 32px;
+    height: 32px;
+    stroke: #000;
+}
+
+.auth-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.auth-subtitle {
+    font-size: 13px;
+    color: #8d8d8d;
+}
+
+.auth-body {
+    padding: 40px;
+}
+
+.auth-status {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 16px;
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 12px;
+}
+
+.status-text {
+    font-size: 13px;
+    color: #8d8d8d;
+    line-height: 1.6;
+}
+
+.status-text.error {
+    color: #f56e6e;
+}
+
+.status-text.success {
+    color: #6ef5b8;
+}
+
+.input-group {
+    margin-bottom: 24px;
+}
+
+.input-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #bcbcbc;
+    margin-bottom: 10px;
+}
+
+.input-field {
+    width: 100%;
+    background: #0a0a0a;
+    border: 1px solid #1e1e1e;
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: #ffffff;
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    letter-spacing: 2px;
+}
+
+.input-field::placeholder {
+    color: #5f5f5f;
+    letter-spacing: normal;
+}
+
+.input-field:focus {
+    border-color: #ffb300;
+    box-shadow: 0 0 0 1px rgba(255, 179, 0, 0.4);
+}
+
+.button-group {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: 14px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #ffcd63, #ff9b00);
+    color: #000;
+    box-shadow: 0 0 20px rgba(255, 179, 0, 0.35);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 0 30px rgba(255, 170, 0, 0.6);
+    transform: translateY(-2px) scale(1.02);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-ghost {
+    background: #0d0d0d;
+    border: 1px solid #1a1a1a;
+    color: #e3e3e3;
+}
+
+.btn-ghost:hover {
+    background: #1a1a1a;
+    border-color: #ffb300;
+    box-shadow: 0 0 12px rgba(255, 179, 0, 0.25);
+    transform: translateY(-1px);
+}
+
+.loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #000;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* NOTIFICATION SYSTEM */
+.notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 400px;
+    max-width: 500px;
+    padding: 16px 20px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.notification.hide {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+.notification.success {
+    background: linear-gradient(135deg, #1a4d3a, #0f2e22);
+    border: 1px solid #2d7a5a;
+    color: #6ef5b8;
+}
+
+.notification.error {
+    background: linear-gradient(135deg, #4d1a1a, #2e0f0f);
+    border: 1px solid #7a2d2d;
+    color: #f56e6e;
+}
+
+.notification.info {
+    background: linear-gradient(135deg, #1a3a4d, #0f222e);
+    border: 1px solid #2d5a7a;
+    color: #6ec8f5;
+}
+
+.notification-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.notification-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.notification-message {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+}
+
+.footer-text {
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid #141414;
+    font-size: 12px;
+    color: #666;
+}
+</style>
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-header">
+        <div class="logo-section">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7V12C2 16.97 5.84 21.5 12 23C18.16 21.5 22 16.97 22 12V7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h1 class="auth-title">Pulsestrapper</h1>
+            <p class="auth-subtitle">License Authentication Required</p>
+        </div>
+    </div>
+
+    <div class="auth-body">
+        <div class="auth-status" id="auth-status">
+            <p class="status-text" id="status-message">Please enter your license key to continue</p>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">License Key</label>
+            <input 
+                type="text" 
+                class="input-field" 
+                id="license-input" 
+                placeholder="XXXX-XXXX-XXXX-XXXX"
+                autocomplete="off"
+                spellcheck="false"
+            >
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-ghost" id="exit-btn">Exit</button>
+            <button class="btn btn-primary" id="activate-btn">
+                <span id="btn-text">Activate</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="footer-text">
+        © 2025 Pulsestrapper. All rights reserved.
+    </div>
+</div>
+
+<script>
+// Notification System
+function showNotification(type, title, message) {
+    const existing = document.querySelector('.notification');
+    if (existing) {
+        existing.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    
+    let iconSVG = '';
+    if (type === 'success') {
+        iconSVG = `
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        `;
+    } else if (type === 'error') {
+        iconSVG = `
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M15 9L9 15M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        `;
+    } else {
+        iconSVG = `
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        `;
+    }
+    
+    notification.innerHTML = `
+        <div class="notification-icon">
+            ${iconSVG}
+        </div>
+        <div class="notification-content">
+            <div class="notification-title">${title}</div>
+            <div class="notification-message">${message}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('hide');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
+}
+
+// Button handlers
+const licenseInput = document.getElementById('license-input');
+const activateBtn = document.getElementById('activate-btn');
+const exitBtn = document.getElementById('exit-btn');
+const statusMessage = document.getElementById('status-message');
+const authStatus = document.getElementById('auth-status');
+const btnText = document.getElementById('btn-text');
+
+// Allow Enter key to submit
+licenseInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        activateBtn.click();
+    }
+});
+
+// Activate button
+activateBtn.addEventListener('click', async () => {
+    const key = licenseInput.value.trim();
+    
+    if (!key) {
+        showNotification('error', 'Invalid Input', 'Please enter a license key');
+        return;
+    }
+    
+    // Disable button and show loading
+    activateBtn.disabled = true;
+    btnText.innerHTML = '<div class="loading-spinner"></div> Activating...';
+    
+    try {
+        // Call Python API
+        const result = await window.pywebview.api.activate_license(key);
+        
+        if (result.success) {
+            showNotification('success', 'License Activated', 'Welcome to Pulsestrapper!');
+            statusMessage.textContent = result.message;
+            statusMessage.className = 'status-text success';
+            
+            // Launch main app after short delay
+            setTimeout(() => {
+                window.pywebview.api.launch_main_app();
+            }, 1500);
+        } else {
+            showNotification('error', 'Activation Failed', result.message);
+            statusMessage.textContent = result.message;
+            statusMessage.className = 'status-text error';
+            
+            // Re-enable button
+            activateBtn.disabled = false;
+            btnText.textContent = 'Activate';
+        }
+    } catch (err) {
+        console.error('Activation error:', err);
+        showNotification('error', 'Error', 'Failed to connect to activation server');
+        activateBtn.disabled = false;
+        btnText.textContent = 'Activate';
+    }
+});
+
+// Exit button
+exitBtn.addEventListener('click', () => {
+    if (window.pywebview) {
+        window.pywebview.api.exit_app();
+    }
+});
+
+// Focus input on load
+document.addEventListener('DOMContentLoaded', () => {
+    licenseInput.focus();
+});
+</script>
+</body>
+</html>
