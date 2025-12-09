@@ -39,182 +39,6 @@ function setupNavigation() {
     });
 }
 
-// --------- MACRO STATE ---------
-let macroUpdateInterval = null;
-
-// --------- UPDATE MACRO STATUS ---------
-async function updateMacroStatus() {
-    try {
-        const status = await window.pywebview.api.macro_get_status();
-        
-        // Update stat cards
-        document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = status.active_clickers;
-        document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = status.total_clickers;
-        
-        const statusText = document.querySelector('.stat-card:nth-child(3) .stat-value');
-        if (status.is_clicking) {
-            statusText.textContent = 'Clicking';
-            statusText.style.color = '#6ef5b8';
-        } else if (status.is_running) {
-            statusText.textContent = 'Active';
-            statusText.style.color = '#ffb300';
-        } else {
-            statusText.textContent = 'Idle';
-            statusText.style.color = '#8d8d8d';
-        }
-        
-        // Update status dots
-        const dot1 = document.querySelector('.stat-card:nth-child(1) .status-dot');
-        const dot2 = document.querySelector('.stat-card:nth-child(2) .status-dot');
-        
-        if (status.active_clickers > 0) {
-            dot1.classList.add('status-active');
-        } else {
-            dot1.classList.remove('status-active');
-        }
-        
-        if (status.is_running) {
-            dot2.classList.add('status-active');
-        } else {
-            dot2.classList.remove('status-active');
-        }
-        
-        // Update keybind display
-        const keybindDisplay = document.getElementById('keybind-display');
-        if (keybindDisplay && status.hotkey) {
-            keybindDisplay.textContent = status.hotkey;
-        }
-        
-        // Update CPS input
-        const cpsInput = document.getElementById('cps-input');
-        if (cpsInput && status.cps > 0) {
-            cpsInput.value = Math.round(status.cps);
-        }
-        
-        // Update mode select
-        const modeSelect = document.querySelector('.control-select');
-        if (modeSelect && status.mode) {
-            modeSelect.value = status.mode.charAt(0).toUpperCase() + status.mode.slice(1);
-        }
-        
-    } catch (err) {
-        console.error("Error updating macro status:", err);
-    }
-}
-
-// --------- CLASH MACRO SETUP ---------
-function setupClashMacro() {
-    // CPS input handler
-    const cpsInput = document.getElementById('cps-input');
-    if (cpsInput) {
-        cpsInput.addEventListener('change', async () => {
-            const cps = parseInt(cpsInput.value) || 10;
-            try {
-                const result = await window.pywebview.api.macro_set_cps(cps);
-                if (result.success) {
-                    showNotification('success', 'CPS Updated', `Set to ${cps} clicks per second`);
-                }
-            } catch (err) {
-                console.error("Error setting CPS:", err);
-                showNotification('error', 'CPS Error', 'Failed to update CPS');
-            }
-        });
-    }
-    
-    // Mode select handler
-    const modeSelect = document.querySelector('.control-select');
-    if (modeSelect) {
-        modeSelect.addEventListener('change', async () => {
-            const mode = modeSelect.value.toLowerCase();
-            try {
-                const result = await window.pywebview.api.macro_set_mode(mode);
-                if (result.success) {
-                    showNotification('success', 'Mode Changed', `Mode set to ${mode}`);
-                }
-            } catch (err) {
-                console.error("Error setting mode:", err);
-                showNotification('error', 'Mode Error', 'Failed to update mode');
-            }
-        });
-    }
-    
-    // Start button handler
-    const startBtn = document.getElementById('start-macro-btn');
-    if (startBtn) {
-        startBtn.addEventListener('click', async () => {
-            try {
-                const status = await window.pywebview.api.macro_get_status();
-                
-                if (status.is_running) {
-                    // Stop macro
-                    const result = await window.pywebview.api.macro_stop();
-                    if (result.success) {
-                        startBtn.innerHTML = `
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M5 3L19 12L5 21V3Z" fill="currentColor"/>
-                            </svg>
-                            Start
-                        `;
-                        showNotification('warning', 'Macro Stopped', 'Autoclicker has been stopped');
-                    }
-                } else {
-                    // Start macro
-                    const result = await window.pywebview.api.macro_start();
-                    if (result.success) {
-                        startBtn.innerHTML = `
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="6" y="4" width="4" height="16" fill="currentColor"/>
-                                <rect x="14" y="4" width="4" height="16" fill="currentColor"/>
-                            </svg>
-                            Stop
-                        `;
-                        showNotification('success', 'Macro Started', 'Press your hotkey to activate clicking');
-                    } else {
-                        showNotification('error', 'Start Failed', result.message || 'Please set a hotkey first');
-                    }
-                }
-                
-                await updateMacroStatus();
-            } catch (err) {
-                console.error("Error toggling macro:", err);
-                showNotification('error', 'Macro Error', 'Failed to toggle macro');
-            }
-        });
-    }
-    
-    // Set Hotkey button handler
-    const setHotkeyBtn = document.getElementById('set-hotkey-btn');
-    if (setHotkeyBtn) {
-        setHotkeyBtn.addEventListener('click', showSetHotkeyModal);
-    }
-    
-    // Start status update interval when on macro page
-    const macroSection = document.getElementById('clash-macro');
-    if (macroSection) {
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.attributeName === 'style') {
-                    if (macroSection.style.display === 'flex') {
-                        // Started viewing macro section
-                        updateMacroStatus();
-                        if (!macroUpdateInterval) {
-                            macroUpdateInterval = setInterval(updateMacroStatus, 500);
-                        }
-                    } else {
-                        // Left macro section
-                        if (macroUpdateInterval) {
-                            clearInterval(macroUpdateInterval);
-                            macroUpdateInterval = null;
-                        }
-                    }
-                }
-            });
-        });
-        
-        observer.observe(macroSection, { attributes: true });
-    }
-}
-
 // --------- CLASH MACRO SLIDER ---------
 function setupClashMacroSlider() {
     const slider = document.getElementById("delay-slider");
@@ -669,7 +493,7 @@ function showSetHotkeyModal() {
         <div class="hotkey-setter">
             <div class="hotkey-info">
                 <p style="color: #8d8d8d; font-size: 13px; margin-bottom: 20px;">
-                    Press any key or mouse button to set as your macro hotkey
+                    Press any key combination to set as your macro hotkey
                 </p>
             </div>
             
@@ -688,7 +512,6 @@ function showSetHotkeyModal() {
     const { overlay, modal } = createModal("Set Hotkey", content);
     
     let capturedKey = null;
-    let keyType = null;
     const displayKey = modal.querySelector("#hotkey-display-key");
     const hint = modal.querySelector(".hotkey-hint");
     
@@ -696,10 +519,18 @@ function showSetHotkeyModal() {
     const handleKeyPress = (e) => {
         e.preventDefault();
         
+        let keyCombo = [];
+        if (e.ctrlKey) keyCombo.push("Ctrl");
+        if (e.shiftKey) keyCombo.push("Shift");
+        if (e.altKey) keyCombo.push("Alt");
+        
         const key = e.key.length === 1 ? e.key.toUpperCase() : e.key;
         if (!['Control', 'Shift', 'Alt'].includes(key)) {
-            capturedKey = key;
-            keyType = "keyboard";
+            keyCombo.push(key);
+        }
+        
+        if (keyCombo.length > 0) {
+            capturedKey = keyCombo.join(" + ");
             displayKey.textContent = capturedKey;
             displayKey.style.color = "#ffb300";
             hint.textContent = "Key captured! Click Save to confirm.";
@@ -707,71 +538,33 @@ function showSetHotkeyModal() {
         }
     };
     
-    // Capture mouse button
-    const handleMouseClick = (e) => {
-        e.preventDefault();
-        
-        let buttonName = "";
-        switch(e.button) {
-            case 0: buttonName = "Left"; break;
-            case 1: buttonName = "Middle"; break;
-            case 2: buttonName = "Right"; break;
-            case 3: buttonName = "X1"; break;
-            case 4: buttonName = "X2"; break;
-            default: buttonName = `Button ${e.button}`;
-        }
-        
-        capturedKey = buttonName.toLowerCase();
-        keyType = "mouse";
-        displayKey.textContent = buttonName + " Mouse";
-        displayKey.style.color = "#ffb300";
-        hint.textContent = "Mouse button captured! Click Save to confirm.";
-        hint.style.color = "#6ef5b8";
-    };
-    
     document.addEventListener("keydown", handleKeyPress);
-    document.addEventListener("mousedown", handleMouseClick);
     
-    modal.querySelector("#hotkey-save-btn").addEventListener("click", async () => {
-        if (capturedKey && keyType) {
-            try {
-                const result = await window.pywebview.api.macro_set_hotkey({
-                    type: keyType,
-                    value: capturedKey
-                });
-                
-                if (result.success) {
-                    const keybindDisplay = document.getElementById("keybind-display");
-                    if (keybindDisplay) {
-                        keybindDisplay.textContent = result.hotkey;
-                    }
-                    
-                    showNotification('success', 'Hotkey Set', `Macro hotkey set to: ${result.hotkey}`);
-                    document.removeEventListener("keydown", handleKeyPress);
-                    document.removeEventListener("mousedown", handleMouseClick);
-                    overlay.remove();
-                } else {
-                    showNotification('error', 'Invalid Hotkey', result.message || 'Failed to set hotkey');
-                }
-            } catch (err) {
-                console.error("Error setting hotkey:", err);
-                showNotification('error', 'Hotkey Error', 'Failed to set hotkey');
+    modal.querySelector("#hotkey-save-btn").addEventListener("click", () => {
+        if (capturedKey) {
+            // Update the keybind display button in the Clash Macro section
+            const keybindDisplay = document.getElementById("keybind-display");
+            if (keybindDisplay) {
+                keybindDisplay.textContent = capturedKey;
             }
+            
+            showNotification('success', 'Hotkey Set', `Macro hotkey set to: ${capturedKey}`);
+            document.removeEventListener("keydown", handleKeyPress);
+            overlay.remove();
         } else {
-            showNotification('error', 'No Key', 'Please press a key or mouse button first');
+            showNotification('error', 'No Key', 'Please press a key combination first');
         }
     });
     
     modal.querySelector("#hotkey-cancel-btn").addEventListener("click", () => {
         document.removeEventListener("keydown", handleKeyPress);
-        document.removeEventListener("mousedown", handleMouseClick);
         overlay.remove();
     });
     
+    // Remove listener if overlay clicked
     overlay.addEventListener("click", (e) => {
         if (e.target === overlay) {
             document.removeEventListener("keydown", handleKeyPress);
-            document.removeEventListener("mousedown", handleMouseClick);
         }
     });
 }
@@ -944,7 +737,6 @@ function initApp() {
     setupSearch();
     setupButtons();
     setupClashMacroSlider();
-    setupClashMacro();
     loadFlags();
 }
 
@@ -958,7 +750,6 @@ document.addEventListener("DOMContentLoaded", () => {
         setupSidebar();
         setupNavigation();
         setupButtons();
-        setupClashMacro();
         setupClashMacroSlider();
     }
 });
