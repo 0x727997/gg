@@ -39,6 +39,182 @@ function setupNavigation() {
     });
 }
 
+// --------- MACRO STATE ---------
+let macroUpdateInterval = null;
+
+// --------- UPDATE MACRO STATUS ---------
+async function updateMacroStatus() {
+    try {
+        const status = await window.pywebview.api.macro_get_status();
+        
+        // Update stat cards
+        document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = status.active_clickers;
+        document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = status.total_clickers;
+        
+        const statusText = document.querySelector('.stat-card:nth-child(3) .stat-value');
+        if (status.is_clicking) {
+            statusText.textContent = 'Clicking';
+            statusText.style.color = '#6ef5b8';
+        } else if (status.is_running) {
+            statusText.textContent = 'Active';
+            statusText.style.color = '#ffb300';
+        } else {
+            statusText.textContent = 'Idle';
+            statusText.style.color = '#8d8d8d';
+        }
+        
+        // Update status dots
+        const dot1 = document.querySelector('.stat-card:nth-child(1) .status-dot');
+        const dot2 = document.querySelector('.stat-card:nth-child(2) .status-dot');
+        
+        if (status.active_clickers > 0) {
+            dot1.classList.add('status-active');
+        } else {
+            dot1.classList.remove('status-active');
+        }
+        
+        if (status.is_running) {
+            dot2.classList.add('status-active');
+        } else {
+            dot2.classList.remove('status-active');
+        }
+        
+        // Update keybind display
+        const keybindDisplay = document.getElementById('keybind-display');
+        if (keybindDisplay && status.hotkey) {
+            keybindDisplay.textContent = status.hotkey;
+        }
+        
+        // Update CPS input
+        const cpsInput = document.getElementById('cps-input');
+        if (cpsInput && status.cps > 0) {
+            cpsInput.value = Math.round(status.cps);
+        }
+        
+        // Update mode select
+        const modeSelect = document.querySelector('.control-select');
+        if (modeSelect && status.mode) {
+            modeSelect.value = status.mode.charAt(0).toUpperCase() + status.mode.slice(1);
+        }
+        
+    } catch (err) {
+        console.error("Error updating macro status:", err);
+    }
+}
+
+// --------- CLASH MACRO SETUP ---------
+function setupClashMacro() {
+    // CPS input handler
+    const cpsInput = document.getElementById('cps-input');
+    if (cpsInput) {
+        cpsInput.addEventListener('input', async () => {
+            const cps = parseInt(cpsInput.value) || 10;
+            
+            if (cps < 1 || cps > 1000) {
+                return;
+            }
+            
+            try {
+                const result = await window.pywebview.api.macro_set_cps(cps);
+                if (result.success) {
+                    console.log('CPS set to:', cps);
+                }
+            } catch (err) {
+                console.error("Error setting CPS:", err);
+            }
+        });
+    }
+    
+    // Mode select handler
+    const modeSelect = document.querySelector('#clash-macro .control-select');
+    if (modeSelect) {
+        modeSelect.addEventListener('change', async () => {
+            const mode = modeSelect.value.toLowerCase();
+            console.log('Changing mode to:', mode);
+            
+            try {
+                const result = await window.pywebview.api.macro_set_mode(mode);
+                if (result.success) {
+                    showNotification('success', 'Mode Changed', result.message);
+                }
+            } catch (err) {
+                console.error("Error setting mode:", err);
+            }
+        });
+    }
+    
+    // Start button handler
+    const startBtn = document.getElementById('start-macro-btn');
+    if (startBtn) {
+        startBtn.addEventListener('click', async () => {
+            try {
+                const status = await window.pywebview.api.macro_get_status();
+                
+                if (status.is_running) {
+                    const result = await window.pywebview.api.macro_stop();
+                    if (result.success) {
+                        startBtn.innerHTML = `
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5 3L19 12L5 21V3Z" fill="currentColor"/>
+                            </svg>
+                            Start
+                        `;
+                        showNotification('warning', 'Macro Stopped', result.message);
+                    }
+                } else {
+                    const result = await window.pywebview.api.macro_start();
+                    if (result.success) {
+                        startBtn.innerHTML = `
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="6" y="4" width="4" height="16" fill="currentColor"/>
+                                <rect x="14" y="4" width="4" height="16" fill="currentColor"/>
+                            </svg>
+                            Stop
+                        `;
+                        showNotification('success', 'Macro Started', result.message);
+                    } else {
+                        showNotification('error', 'Start Failed', result.message);
+                    }
+                }
+                
+                await updateMacroStatus();
+            } catch (err) {
+                console.error("Error toggling macro:", err);
+            }
+        });
+    }
+    
+    // Set Hotkey button
+    const setHotkeyBtn = document.getElementById('set-hotkey-btn');
+    if (setHotkeyBtn) {
+        setHotkeyBtn.addEventListener('click', showSetHotkeyModal);
+    }
+    
+    // Status updates
+    const macroSection = document.getElementById('clash-macro');
+    if (macroSection) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'style') {
+                    if (macroSection.style.display === 'flex') {
+                        updateMacroStatus();
+                        if (!macroUpdateInterval) {
+                            macroUpdateInterval = setInterval(updateMacroStatus, 500);
+                        }
+                    } else {
+                        if (macroUpdateInterval) {
+                            clearInterval(macroUpdateInterval);
+                            macroUpdateInterval = null;
+                        }
+                    }
+                }
+            });
+        });
+        
+        observer.observe(macroSection, { attributes: true });
+    }
+}
+
 // --------- CLASH MACRO SLIDER ---------
 function setupClashMacroSlider() {
     const slider = document.getElementById("delay-slider");
@@ -122,33 +298,43 @@ function setupSearch() {
     });
 }
 
-// --------- WINDOW CONTROL BUTTONS ---------
+// --------- WINDOW CONTROL BUTTONS (CLEAN VERSION) ---------
 function setupWindowButtons() {
-    const closeBtn = document.getElementById("close-btn");
-    const minBtn = document.getElementById("min-btn");
-    const maxBtn = document.getElementById("max-btn");
-    
-    // Also get the ones in other sections
     const closeBtns = document.querySelectorAll(".close-btn");
     const minBtns = document.querySelectorAll(".min-btn");
-    const maxBtns = document.querySelectorAll(".max-btn");
+    const appContainer = document.querySelector(".app-container");
 
-    closeBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
+    // CLOSE BUTTONS - Closes the app immediately
+    closeBtns.forEach((btn) => {
+        btn.onclick = function(e) {
+            e.stopPropagation();
             window.pywebview.api.close();
-        });
+        };
     });
 
-    minBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-            window.pywebview.api.minimize();
-        });
-    });
-
-    maxBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-            window.pywebview.api.maximize();
-        });
+    // MINIMIZE BUTTONS - Minimizes with animation
+    minBtns.forEach((btn) => {
+        btn.onclick = async function(e) {
+            e.stopPropagation();
+            
+            // Add animation
+            if (appContainer) {
+                appContainer.classList.add('minimizing');
+            }
+            
+            // Wait for animation (250ms)
+            await new Promise(resolve => setTimeout(resolve, 250));
+            
+            // Then minimize
+            await window.pywebview.api.minimize();
+            
+            // Cleanup
+            setTimeout(() => {
+                if (appContainer) {
+                    appContainer.classList.remove('minimizing');
+                }
+            }, 100);
+        };
     });
 }
 
@@ -493,7 +679,7 @@ function showSetHotkeyModal() {
         <div class="hotkey-setter">
             <div class="hotkey-info">
                 <p style="color: #8d8d8d; font-size: 13px; margin-bottom: 20px;">
-                    Press any key combination to set as your macro hotkey
+                    Press any key or mouse button (including side buttons)
                 </p>
             </div>
             
@@ -512,59 +698,147 @@ function showSetHotkeyModal() {
     const { overlay, modal } = createModal("Set Hotkey", content);
     
     let capturedKey = null;
+    let keyType = null;
     const displayKey = modal.querySelector("#hotkey-display-key");
     const hint = modal.querySelector(".hotkey-hint");
+    let isCapturing = true;
     
-    // Capture key press
+    // Disable dragging
+    document.body.style.webkitAppRegion = 'no-drag';
+    overlay.style.webkitAppRegion = 'no-drag';
+    modal.style.webkitAppRegion = 'no-drag';
+    
+    // Capture keyboard
     const handleKeyPress = (e) => {
+        if (!isCapturing) return;
+        
+        let key = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+        
+        if (['Meta'].includes(key)) return;
+        
         e.preventDefault();
+        e.stopPropagation();
         
-        let keyCombo = [];
-        if (e.ctrlKey) keyCombo.push("Ctrl");
-        if (e.shiftKey) keyCombo.push("Shift");
-        if (e.altKey) keyCombo.push("Alt");
+        capturedKey = key;
+        keyType = "keyboard";
+        displayKey.textContent = key;
+        displayKey.style.color = "#ffb300";
+        hint.textContent = "Key captured! Click Save to confirm.";
+        hint.style.color = "#6ef5b8";
+    };
+    
+    // Capture mouse
+    const handleMouseDown = (e) => {
+        if (!isCapturing) return;
         
-        const key = e.key.length === 1 ? e.key.toUpperCase() : e.key;
-        if (!['Control', 'Shift', 'Alt'].includes(key)) {
-            keyCombo.push(key);
+        // Allow clicks on modal buttons
+        if (e.target.closest('.btn')) {
+            return;
         }
         
-        if (keyCombo.length > 0) {
-            capturedKey = keyCombo.join(" + ");
-            displayKey.textContent = capturedKey;
-            displayKey.style.color = "#ffb300";
-            hint.textContent = "Key captured! Click Save to confirm.";
-            hint.style.color = "#6ef5b8";
+        e.preventDefault();
+        e.stopPropagation();
+        
+        let buttonName = "";
+        let buttonValue = "";
+        
+        switch(e.button) {
+            case 0: 
+                buttonName = "Left Mouse";
+                buttonValue = "left";
+                break;
+            case 1: 
+                buttonName = "Middle Mouse";
+                buttonValue = "middle";
+                break;
+            case 2: 
+                buttonName = "Right Mouse";
+                buttonValue = "right";
+                break;
+            case 3: 
+                buttonName = "Mouse 4 (Back)";
+                buttonValue = "x1";
+                break;
+            case 4: 
+                buttonName = "Mouse 5 (Forward)";
+                buttonValue = "x2";
+                break;
+            default: 
+                buttonName = `Mouse ${e.button}`;
+                buttonValue = `button${e.button}`;
+        }
+        
+        capturedKey = buttonValue;
+        keyType = "mouse";
+        displayKey.textContent = buttonName;
+        displayKey.style.color = "#ffb300";
+        hint.textContent = "Mouse button captured! Click Save to confirm.";
+        hint.style.color = "#6ef5b8";
+    };
+    
+    const preventContext = (e) => {
+        if (isCapturing) {
+            e.preventDefault();
         }
     };
     
-    document.addEventListener("keydown", handleKeyPress);
+    const preventNav = (e) => {
+        if (isCapturing && (e.button === 3 || e.button === 4)) {
+            e.preventDefault();
+            return false;
+        }
+    };
     
-    modal.querySelector("#hotkey-save-btn").addEventListener("click", () => {
-        if (capturedKey) {
-            // Update the keybind display button in the Clash Macro section
-            const keybindDisplay = document.getElementById("keybind-display");
-            if (keybindDisplay) {
-                keybindDisplay.textContent = capturedKey;
-            }
+    document.addEventListener("keydown", handleKeyPress, true);
+    document.addEventListener("mousedown", handleMouseDown, true);
+    document.addEventListener("contextmenu", preventContext, true);
+    document.addEventListener("mouseup", preventNav, true);
+    
+    const cleanup = () => {
+        isCapturing = false;
+        document.removeEventListener("keydown", handleKeyPress, true);
+        document.removeEventListener("mousedown", handleMouseDown, true);
+        document.removeEventListener("contextmenu", preventContext, true);
+        document.removeEventListener("mouseup", preventNav, true);
+        document.body.style.webkitAppRegion = '';
+    };
+    
+    modal.querySelector("#hotkey-save-btn").addEventListener("click", async () => {
+        if (!capturedKey || !keyType) {
+            showNotification('error', 'No Key', 'Press a key or mouse button first');
+            return;
+        }
+        
+        cleanup();
+        
+        try {
+            const result = await window.pywebview.api.macro_set_hotkey({
+                type: keyType,
+                value: capturedKey
+            });
             
-            showNotification('success', 'Hotkey Set', `Macro hotkey set to: ${capturedKey}`);
-            document.removeEventListener("keydown", handleKeyPress);
-            overlay.remove();
-        } else {
-            showNotification('error', 'No Key', 'Please press a key combination first');
+            if (result.success) {
+                document.getElementById("keybind-display").textContent = result.hotkey;
+                showNotification('success', 'Hotkey Set', result.message);
+                overlay.remove();
+            } else {
+                showNotification('error', 'Failed', result.message);
+            }
+        } catch (err) {
+            console.error(err);
+            showNotification('error', 'Error', 'Failed to set hotkey');
         }
     });
     
     modal.querySelector("#hotkey-cancel-btn").addEventListener("click", () => {
-        document.removeEventListener("keydown", handleKeyPress);
+        cleanup();
         overlay.remove();
     });
     
-    // Remove listener if overlay clicked
     overlay.addEventListener("click", (e) => {
         if (e.target === overlay) {
-            document.removeEventListener("keydown", handleKeyPress);
+            cleanup();
+            overlay.remove();
         }
     });
 }
@@ -737,6 +1011,7 @@ function initApp() {
     setupSearch();
     setupButtons();
     setupClashMacroSlider();
+    setupClashMacro();
     loadFlags();
 }
 
@@ -749,7 +1024,9 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Running in normal browser, no Python bridge.");
         setupSidebar();
         setupNavigation();
+        setupWindowButtons();
         setupButtons();
+        setupClashMacro();
         setupClashMacroSlider();
     }
 });
