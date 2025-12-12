@@ -23,6 +23,19 @@ body {
     padding: 0;
 }
 
+/* DISABLE DRAGGING WHEN MODAL IS OPEN */
+body.modal-open {
+    -webkit-app-region: no-drag !important;
+}
+
+.modal-overlay {
+    -webkit-app-region: no-drag !important;
+}
+
+.modal {
+    -webkit-app-region: no-drag !important;
+}
+
 /* APP CONTAINER WITH OPENING ANIMATION */
 .app-container {
     width: 100%;
@@ -704,6 +717,7 @@ body {
     height: 16px;
 }
 
+/* FIX FOR MODE DROPDOWN */
 .control-select {
     width: 100%;
     background: #0a0a0a;
@@ -716,6 +730,33 @@ body {
     cursor: pointer;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
     text-align: left;
+    appearance: auto;
+    -webkit-appearance: menulist;
+    -moz-appearance: menulist;
+}
+
+.control-select:focus,
+.control-select:hover {
+    border-color: #ffb300;
+    box-shadow: 0 0 0 1px rgba(255, 179, 0, 0.4);
+}
+
+.control-select option {
+    background: #0a0a0a;
+    color: #ffffff;
+    padding: 10px;
+}
+
+/* Make sure keybind display button doesn't act like dropdown */
+.keybind-display {
+    background: #0a0a0a;
+    border: 1px solid #1e1e1e;
+    pointer-events: all;
+    cursor: pointer;
+}
+
+.keybind-display:hover {
+    border-color: #ffb300;
 }
 
 .control-select:focus,
@@ -1579,3 +1620,66 @@ body {
     background: #151515;
 }
 
+/* ADD THESE ANIMATIONS TO YOUR STYLE.CSS */
+
+/* Minimize animation - shrinks down and fades */
+@keyframes minimizeWindow {
+    0% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.85) translateY(20px);
+    }
+}
+
+/* Add this class when minimizing */
+.app-container.minimizing {
+    animation: minimizeWindow 0.25s cubic-bezier(0.4, 0.0, 1, 1) forwards;
+}
+
+/* Alternative: Slide down animation */
+@keyframes minimizeSlideDown {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+        filter: blur(5px);
+    }
+}
+
+.app-container.minimizing-slide {
+    animation: minimizeSlideDown 0.3s cubic-bezier(0.4, 0.0, 0.6, 1) forwards;
+}
+
+/* Alternative: Zoom out to taskbar */
+@keyframes minimizeZoom {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.5);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.1) translateY(100vh);
+    }
+}
+
+.app-container.minimizing-zoom {
+    animation: minimizeZoom 0.35s cubic-bezier(0.65, 0.0, 0.35, 1) forwards;
+}
+
+/* Button feedback when clicked */
+.window-btn.minimizing-btn {
+    background: #ffb300 !important;
+    border-color: #ffb300 !important;
+    transform: scale(0.9);
+}
