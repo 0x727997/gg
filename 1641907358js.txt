@@ -372,6 +372,28 @@ function createModal(title, content) {
     return { overlay, modal };
 }
 
+// --------- CLEAN INVALID FLAGS ---------
+async function cleanInvalidFlags() {
+    try {
+        const result = await window.pywebview.api.validate_and_clean_flags();
+        
+        if (result.success) {
+            if (result.removed_count > 0) {
+                showNotification('warning', 'Flags Cleaned', 
+                    `Removed ${result.removed_count} invalid flag(s). ${result.remaining_count} flags remaining.`);
+                await loadFlags(); // Refresh the table
+            } else {
+                showNotification('success', 'All Valid', 'All flags are valid!');
+            }
+        } else {
+            showNotification('error', 'Clean Failed', result.message);
+        }
+    } catch (err) {
+        console.error("Error cleaning flags:", err);
+        showNotification('error', 'Error', 'Failed to clean flags');
+    }
+}
+
 // --------- NOTIFICATION SYSTEM ---------
 function showNotification(type, title, message) {
     // Remove any existing notifications
@@ -565,6 +587,7 @@ function showAddNewModal() {
                 showNotification('error', 'Invalid Input', 'Please fill in both name and value');
             }
         } else {
+            // UPDATED IMPORT JSON SECTION
             const json = modal.querySelector("#json-import-input").value;
             
             if (json) {
@@ -572,12 +595,20 @@ function showAddNewModal() {
                     JSON.parse(json); // Validate JSON first
                     const result = await window.pywebview.api.import_json(json);
                     
-                    if (result) {
+                    if (result && result.success) {
                         await loadFlags();
-                        showNotification('success', 'Flags Imported', 'Successfully imported flags from JSON');
+                        
+                        // Show detailed import result
+                        let message = `Imported ${result.imported} flag(s)`;
+                        if (result.validation && result.validation.removed_count > 0) {
+                            message += `, removed ${result.validation.removed_count} invalid flag(s)`;
+                            showNotification('warning', 'Flags Imported', message);
+                        } else {
+                            showNotification('success', 'Flags Imported', message);
+                        }
                         overlay.remove();
                     } else {
-                        showNotification('error', 'Import Failed', 'Failed to import flags');
+                        showNotification('error', 'Import Failed', result.message || 'Failed to import flags');
                     }
                 } catch (e) {
                     showNotification('error', 'Invalid JSON', 'Please enter valid JSON format');
@@ -925,8 +956,13 @@ function setupButtons() {
                 }
             });
         } else if (text === "Clean FastFlag List") {
-            btn.addEventListener("click", () => {
-                showNotification('info', 'Cleaned', 'Invalid flags have been removed');
+            btn.addEventListener("click", async () => {
+                try {
+                    await cleanInvalidFlags();
+                } catch (err) {
+                    console.error("Error cleaning flags:", err);
+                    showNotification('error', 'Clean Failed', 'Failed to clean invalid flags');
+                }
             });
         } else if (text === "Show Preset Flags") {
             btn.addEventListener("click", async () => {
@@ -951,14 +987,21 @@ function setupButtons() {
     const saveLaunchBtn = document.querySelector('.btn-bottom-primary');
     if (saveLaunchBtn) {
         saveLaunchBtn.addEventListener('click', async () => {
-            showNotification('success', 'Launching', 'Applying flags and launching Roblox...');
-            
-            if (window.pywebview && window.pywebview.api) {
-                try {
-                    await window.pywebview.api.save_and_launch();
-                } catch (err) {
-                    console.error("Error launching:", err);
+            try {
+                // Clean invalid flags first
+                const cleanResult = await window.pywebview.api.validate_and_clean_flags();
+                if (cleanResult.removed_count > 0) {
+                    await loadFlags();
+                    showNotification('warning', 'Cleaned & Launching', 
+                        `Removed ${cleanResult.removed_count} invalid flag(s), launching Roblox...`);
+                } else {
+                    showNotification('success', 'Launching', 'Applying flags and launching Roblox...');
                 }
+                
+                await window.pywebview.api.save_and_launch();
+            } catch (err) {
+                console.error("Error launching:", err);
+                showNotification('error', 'Launch Failed', 'Failed to launch Roblox');
             }
         });
     }
@@ -973,10 +1016,19 @@ function setupButtons() {
                     const status = await window.pywebview.api.get_roblox_status();
                     
                     if (status === 'attached') {
+                        // Clean invalid flags first
+                        const cleanResult = await window.pywebview.api.validate_and_clean_flags();
+                        if (cleanResult.removed_count > 0) {
+                            await loadFlags();
+                        }
+                        
+                        // Then apply
                         await window.pywebview.api.apply_flags_now();
-                        showNotification('success', 'Saved & Applied', 'Flags saved and applied to running Roblox');
+                        showNotification('success', 'Saved & Applied', 
+                            `Flags saved and applied to running Roblox`);
                     } else {
-                        showNotification('success', 'Saved', 'Flags saved - will apply when Roblox launches');
+                        showNotification('success', 'Saved', 
+                            'Flags saved - will apply when Roblox launches');
                     }
                 } catch (err) {
                     console.error("Error saving:", err);
