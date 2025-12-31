@@ -282,62 +282,19 @@ async function loadFlags() {
     }
 }
 
-// --------- SEARCH FILTER (FIXED & ENHANCED) ---------
+// --------- SEARCH FILTER ---------
 function setupSearch() {
     const searchInput = document.getElementById("search");
     const tbody = document.querySelector("#flags-table tbody");
-    const totalSpan = document.getElementById("total-flags");
 
-    if (!searchInput) {
-        console.error("Search input not found!");
-        return;
-    }
-
-    if (!tbody) {
-        console.error("Table body not found!");
-        return;
-    }
-
-    console.log("Search initialized successfully");
-
-    searchInput.addEventListener("input", (e) => {
-        const query = searchInput.value.toLowerCase().trim();
+    searchInput.addEventListener("input", () => {
+        const q = searchInput.value.toLowerCase();
         const rows = tbody.querySelectorAll("tr");
-        let visibleCount = 0;
-
-        console.log("Searching for:", query);
 
         rows.forEach(row => {
-            const nameCell = row.querySelector(".flag-name");
-            const valueCell = row.querySelector(".flag-value");
-            
-            if (!nameCell) return;
-            
-            const name = nameCell.textContent.toLowerCase();
-            const value = valueCell ? valueCell.textContent.toLowerCase() : "";
-            
-            // Check if query matches name OR value
-            const matches = name.includes(query) || value.includes(query);
-            
-            if (matches || query === "") {
-                row.style.display = "";
-                visibleCount++;
-            } else {
-                row.style.display = "none";
-            }
+            const name = row.children[0].textContent.toLowerCase();
+            row.style.display = name.includes(q) ? "" : "none";
         });
-
-        // Update the counter
-        const totalFlags = rows.length;
-        if (query) {
-            totalSpan.textContent = `${visibleCount} / ${totalFlags}`;
-            totalSpan.style.color = visibleCount === 0 ? "#f56e6e" : "#ffb300";
-        } else {
-            totalSpan.textContent = totalFlags.toString();
-            totalSpan.style.color = "#9a9a9a";
-        }
-
-        console.log(`Found ${visibleCount} matching flags out of ${totalFlags}`);
     });
 }
 
