@@ -3,7 +3,7 @@ function setupSidebar() {
     const sidebar = document.getElementById("sidebar");
     const mainCards = document.querySelectorAll(".main-card");
     const toggleBtn = document.getElementById("sidebar-toggle");
-    
+
     toggleBtn.addEventListener("click", () => {
         sidebar.classList.toggle("collapsed");
         mainCards.forEach(card => {
@@ -15,20 +15,20 @@ function setupSidebar() {
 // --------- SIDEBAR NAVIGATION ---------
 function setupNavigation() {
     const sidebarItems = document.querySelectorAll(".sidebar-item");
-    
+
     sidebarItems.forEach(item => {
         item.addEventListener("click", (e) => {
             e.preventDefault();
-            
+
             // Remove active from all
             sidebarItems.forEach(i => i.classList.remove("active"));
             item.classList.add("active");
-            
+
             // Hide all sections
             document.querySelectorAll(".section-page").forEach(section => {
                 section.style.display = "none";
             });
-            
+
             // Show selected section
             const sectionId = item.getAttribute("data-section");
             const targetSection = document.getElementById(sectionId);
@@ -46,11 +46,11 @@ let macroUpdateInterval = null;
 async function updateMacroStatus() {
     try {
         const status = await window.pywebview.api.macro_get_status();
-        
+
         // Update stat cards
         document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = status.active_clickers;
         document.querySelector('.stat-card:nth-child(2) .stat-value').textContent = status.total_clickers;
-        
+
         const statusText = document.querySelector('.stat-card:nth-child(3) .stat-value');
         if (status.is_clicking) {
             statusText.textContent = 'Clicking';
@@ -62,41 +62,41 @@ async function updateMacroStatus() {
             statusText.textContent = 'Idle';
             statusText.style.color = '#8d8d8d';
         }
-        
+
         // Update status dots
         const dot1 = document.querySelector('.stat-card:nth-child(1) .status-dot');
         const dot2 = document.querySelector('.stat-card:nth-child(2) .status-dot');
-        
+
         if (status.active_clickers > 0) {
             dot1.classList.add('status-active');
         } else {
             dot1.classList.remove('status-active');
         }
-        
+
         if (status.is_running) {
             dot2.classList.add('status-active');
         } else {
             dot2.classList.remove('status-active');
         }
-        
+
         // Update keybind display
         const keybindDisplay = document.getElementById('keybind-display');
         if (keybindDisplay && status.hotkey) {
             keybindDisplay.textContent = status.hotkey;
         }
-        
+
         // Update CPS input
         const cpsInput = document.getElementById('cps-input');
         if (cpsInput && status.cps > 0) {
             cpsInput.value = Math.round(status.cps);
         }
-        
+
         // Update mode select
         const modeSelect = document.querySelector('.control-select');
         if (modeSelect && status.mode) {
             modeSelect.value = status.mode.charAt(0).toUpperCase() + status.mode.slice(1);
         }
-        
+
     } catch (err) {
         console.error("Error updating macro status:", err);
     }
@@ -109,11 +109,11 @@ function setupClashMacro() {
     if (cpsInput) {
         cpsInput.addEventListener('input', async () => {
             const cps = parseInt(cpsInput.value) || 10;
-            
+
             if (cps < 1 || cps > 1000) {
                 return;
             }
-            
+
             try {
                 const result = await window.pywebview.api.macro_set_cps(cps);
                 if (result.success) {
@@ -124,14 +124,14 @@ function setupClashMacro() {
             }
         });
     }
-    
+
     // Mode select handler
     const modeSelect = document.querySelector('#clash-macro .control-select');
     if (modeSelect) {
         modeSelect.addEventListener('change', async () => {
             const mode = modeSelect.value.toLowerCase();
             console.log('Changing mode to:', mode);
-            
+
             try {
                 const result = await window.pywebview.api.macro_set_mode(mode);
                 if (result.success) {
@@ -142,14 +142,14 @@ function setupClashMacro() {
             }
         });
     }
-    
+
     // Start button handler
     const startBtn = document.getElementById('start-macro-btn');
     if (startBtn) {
         startBtn.addEventListener('click', async () => {
             try {
                 const status = await window.pywebview.api.macro_get_status();
-                
+
                 if (status.is_running) {
                     const result = await window.pywebview.api.macro_stop();
                     if (result.success) {
@@ -176,20 +176,20 @@ function setupClashMacro() {
                         showNotification('error', 'Start Failed', result.message);
                     }
                 }
-                
+
                 await updateMacroStatus();
             } catch (err) {
                 console.error("Error toggling macro:", err);
             }
         });
     }
-    
+
     // Set Hotkey button
     const setHotkeyBtn = document.getElementById('set-hotkey-btn');
     if (setHotkeyBtn) {
         setHotkeyBtn.addEventListener('click', showSetHotkeyModal);
     }
-    
+
     // Status updates
     const macroSection = document.getElementById('clash-macro');
     if (macroSection) {
@@ -210,7 +210,7 @@ function setupClashMacro() {
                 }
             });
         });
-        
+
         observer.observe(macroSection, { attributes: true });
     }
 }
@@ -219,7 +219,7 @@ function setupClashMacro() {
 function setupClashMacroSlider() {
     const slider = document.getElementById("delay-slider");
     const valueDisplay = document.getElementById("delay-value");
-    
+
     if (slider && valueDisplay) {
         slider.addEventListener("input", () => {
             valueDisplay.textContent = slider.value + " ms";
@@ -241,20 +241,20 @@ async function loadFlags() {
                 <td class="flag-name">${name}</td>
                 <td contenteditable="true" class="flag-value">${value}</td>
             `;
-            
+
             // Make rows selectable
             tr.addEventListener("click", (e) => {
                 // Don't toggle if clicking on editable cell
                 if (e.target.contentEditable === "true") return;
                 tr.classList.toggle("selected");
             });
-            
+
             // Save on value edit
             const valueCell = tr.querySelector(".flag-value");
             valueCell.addEventListener("blur", async () => {
                 const newValue = valueCell.textContent.trim();
                 const flagName = tr.querySelector(".flag-name").textContent;
-                
+
                 try {
                     await window.pywebview.api.update_flag(flagName, newValue);
                     showNotification('success', 'Flag Updated', `${flagName} = ${newValue}`);
@@ -264,7 +264,7 @@ async function loadFlags() {
                     await loadFlags(); // Reload to revert
                 }
             });
-            
+
             // Prevent newlines in contenteditable
             valueCell.addEventListener("keydown", (e) => {
                 if (e.key === "Enter") {
@@ -272,7 +272,7 @@ async function loadFlags() {
                     valueCell.blur();
                 }
             });
-            
+
             tbody.appendChild(tr);
         });
 
@@ -282,12 +282,15 @@ async function loadFlags() {
     }
 }
 
+// --------- SEARCH FILTER ---------
 // --------- SEARCH FILTER (FIXED & ENHANCED) ---------
 function setupSearch() {
     const searchInput = document.getElementById("search");
     const tbody = document.querySelector("#flags-table tbody");
     const totalSpan = document.getElementById("total-flags");
 
+    searchInput.addEventListener("input", () => {
+        const q = searchInput.value.toLowerCase();
     if (!searchInput) {
         console.error("Search input not found!");
         return;
@@ -308,6 +311,8 @@ function setupSearch() {
         console.log("Searching for:", query);
 
         rows.forEach(row => {
+            const name = row.children[0].textContent.toLowerCase();
+            row.style.display = name.includes(q) ? "" : "none";
             const nameCell = row.querySelector(".flag-name");
             const valueCell = row.querySelector(".flag-value");
             
@@ -359,18 +364,18 @@ function setupWindowButtons() {
     minBtns.forEach((btn) => {
         btn.onclick = async function(e) {
             e.stopPropagation();
-            
+
             // Add animation
             if (appContainer) {
                 appContainer.classList.add('minimizing');
             }
-            
+
             // Wait for animation (250ms)
             await new Promise(resolve => setTimeout(resolve, 250));
-            
+
             // Then minimize
             await window.pywebview.api.minimize();
-            
+
             // Cleanup
             setTimeout(() => {
                 if (appContainer) {
@@ -385,10 +390,10 @@ function setupWindowButtons() {
 function createModal(title, content) {
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
-    
+
     const modal = document.createElement("div");
     modal.className = "modal";
-    
+
     modal.innerHTML = `
         <div class="modal-header">
             <h2 class="modal-title">${title}</h2>
@@ -398,20 +403,20 @@ function createModal(title, content) {
             ${content}
         </div>
     `;
-    
+
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
-    
+
     modal.querySelector(".modal-close").addEventListener("click", () => {
         overlay.remove();
     });
-    
+
     overlay.addEventListener("click", (e) => {
         if (e.target === overlay) {
             overlay.remove();
         }
     });
-    
+
     return { overlay, modal };
 }
 
@@ -419,7 +424,7 @@ function createModal(title, content) {
 async function cleanInvalidFlags() {
     try {
         const result = await window.pywebview.api.validate_and_clean_flags();
-        
+
         if (result.success) {
             if (result.removed_count > 0) {
                 showNotification('warning', 'Flags Cleaned', 
@@ -444,11 +449,11 @@ function showNotification(type, title, message) {
     if (existing) {
         existing.remove();
     }
-    
+
     // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    
+
     // Set icon based on type
     let iconSVG = '';
     if (type === 'success') {
@@ -479,7 +484,7 @@ function showNotification(type, title, message) {
             </svg>
         `;
     }
-    
+
     notification.innerHTML = `
         <div class="notification-icon">
             ${iconSVG}
@@ -489,9 +494,9 @@ function showNotification(type, title, message) {
             <div class="notification-message">${message}</div>
         </div>
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     // Auto hide after 2 seconds
     setTimeout(() => {
         notification.classList.add('hide');
@@ -514,16 +519,16 @@ function showConfirmModal(title, message, onConfirm) {
             <button class="btn btn-ghost" id="confirm-cancel-btn">Cancel</button>
         </div>
     `;
-    
+
     const { overlay, modal } = createModal(title, content);
-    
+
     modal.querySelector("#confirm-ok-btn").addEventListener("click", () => {
         overlay.remove();
         if (onConfirm) {
             onConfirm();
         }
     });
-    
+
     modal.querySelector("#confirm-cancel-btn").addEventListener("click", () => {
         overlay.remove();
     });
@@ -545,9 +550,9 @@ function showProfilesModal() {
             <button class="btn btn-ghost" id="profile-cancel-btn">Cancel</button>
         </div>
     `;
-    
+
     const { overlay, modal } = createModal("Flag Profiles", content);
-    
+
     modal.querySelector("#profile-ok-btn").addEventListener("click", () => {
         const profileName = modal.querySelector("#profile-name-input").value;
         if (profileName) {
@@ -558,7 +563,7 @@ function showProfilesModal() {
             showNotification('error', 'No Name', 'Please enter a profile name');
         }
     });
-    
+
     modal.querySelector("#profile-cancel-btn").addEventListener("click", () => {
         overlay.remove();
     });
@@ -571,7 +576,7 @@ function showAddNewModal() {
             <button class="tab-btn active" data-tab="single">Add single</button>
             <button class="tab-btn" data-tab="import">Import JSON</button>
         </div>
-        
+
         <div class="tab-content active" id="single-tab">
             <div class="form-group">
                 <label class="form-label">Name</label>
@@ -582,40 +587,40 @@ function showAddNewModal() {
                 <input type="text" class="modal-input" id="flag-value-input" placeholder="True/False or number" />
             </div>
         </div>
-        
+
         <div class="tab-content" id="import-tab">
             <div class="form-group">
                 <label class="form-label">Paste JSON</label>
                 <textarea class="modal-textarea" id="json-import-input" placeholder='{"FlagName": "value", "AnotherFlag": "123"}'></textarea>
             </div>
         </div>
-        
+
         <div class="modal-footer">
             <button class="btn btn-primary" id="add-ok-btn">OK</button>
             <button class="btn btn-ghost" id="add-cancel-btn">Cancel</button>
         </div>
     `;
-    
+
     const { overlay, modal } = createModal("Add Fast Flag", content);
-    
+
     modal.querySelectorAll(".tab-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             modal.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
             modal.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-            
+
             btn.classList.add("active");
             const tabId = btn.dataset.tab + "-tab";
             modal.querySelector("#" + tabId).classList.add("active");
         });
     });
-    
+
     modal.querySelector("#add-ok-btn").addEventListener("click", async () => {
         const activeTab = modal.querySelector(".tab-btn.active").dataset.tab;
-        
+
         if (activeTab === "single") {
             const name = modal.querySelector("#flag-name-input").value.trim();
             const value = modal.querySelector("#flag-value-input").value.trim();
-            
+
             if (name && value) {
                 try {
                     await window.pywebview.api.add_flag(name, value);
@@ -630,26 +635,21 @@ function showAddNewModal() {
                 showNotification('error', 'Invalid Input', 'Please fill in both name and value');
             }
         } else {
-            // FIXED IMPORT JSON SECTION
+            // UPDATED IMPORT JSON SECTION
             const json = modal.querySelector("#json-import-input").value;
-            
+
             if (json) {
                 try {
                     JSON.parse(json); // Validate JSON first
                     const result = await window.pywebview.api.import_json(json);
-                    
+
                     if (result && result.success) {
                         await loadFlags();
-                        
+
                         // Show detailed import result
-                        const removedCount = result.validation?.removed_count || 0;
-                        const totalInJson = result.total_in_json || result.imported;
-                        const actualImported = result.imported;
-                        
-                        let message = `Imported ${actualImported} valid flag(s)`;
-                        
-                        if (removedCount > 0) {
-                            message += `, removed ${removedCount} invalid flag(s)`;
+                        let message = `Imported ${result.imported} flag(s)`;
+                        if (result.validation && result.validation.removed_count > 0) {
+                            message += `, removed ${result.validation.removed_count} invalid flag(s)`;
                             showNotification('warning', 'Flags Imported', message);
                         } else {
                             showNotification('success', 'Flags Imported', message);
@@ -666,7 +666,7 @@ function showAddNewModal() {
             }
         }
     });
-    
+
     modal.querySelector("#add-cancel-btn").addEventListener("click", () => {
         overlay.remove();
     });
@@ -687,7 +687,7 @@ function showAdvancedSettingsModal() {
                     </select>
                 </div>
             </div>
-            
+
             <div class="setting-item">
                 <div class="setting-info">
                     <div class="setting-title">Ctrl+C Json Format</div>
@@ -698,7 +698,7 @@ function showAdvancedSettingsModal() {
                     <span class="toggle-slider"></span>
                 </label>
             </div>
-            
+
             <div class="setting-item">
                 <div class="setting-info">
                     <div class="setting-title">Use Alt Manually</div>
@@ -709,7 +709,7 @@ function showAdvancedSettingsModal() {
                     <span class="toggle-slider"></span>
                 </label>
             </div>
-            
+
             <div class="setting-item">
                 <div class="setting-info">
                     <div class="setting-title">Preset Column</div>
@@ -720,7 +720,7 @@ function showAdvancedSettingsModal() {
                     <span class="toggle-slider"></span>
                 </label>
             </div>
-            
+
             <div class="setting-item">
                 <div class="setting-info">
                     <div class="setting-title">Flag Count</div>
@@ -732,21 +732,21 @@ function showAdvancedSettingsModal() {
                 </label>
             </div>
         </div>
-        
+
         <div class="modal-footer">
             <button class="btn btn-primary" id="settings-save-btn">Save</button>
             <button class="btn btn-ghost" id="settings-close-btn">Close</button>
         </div>
     `;
-    
+
     const { overlay, modal } = createModal("Advanced Settings", content);
-    
+
     modal.querySelector("#settings-save-btn").addEventListener("click", () => {
         console.log("Settings saved");
         showNotification('success', 'Settings Saved', 'Advanced settings have been saved');
         overlay.remove();
     });
-    
+
     modal.querySelector("#settings-close-btn").addEventListener("click", () => {
         overlay.remove();
     });
@@ -761,43 +761,43 @@ function showSetHotkeyModal() {
                     Press any key or mouse button (including side buttons)
                 </p>
             </div>
-            
+
             <div class="hotkey-display-box">
                 <div class="hotkey-key" id="hotkey-display-key">None</div>
                 <div class="hotkey-hint">Waiting for input...</div>
             </div>
         </div>
-        
+
         <div class="modal-footer">
             <button class="btn btn-primary" id="hotkey-save-btn">Save</button>
             <button class="btn btn-ghost" id="hotkey-cancel-btn">Cancel</button>
         </div>
     `;
-    
+
     const { overlay, modal } = createModal("Set Hotkey", content);
-    
+
     let capturedKey = null;
     let keyType = null;
     const displayKey = modal.querySelector("#hotkey-display-key");
     const hint = modal.querySelector(".hotkey-hint");
     let isCapturing = true;
-    
+
     // Disable dragging
     document.body.style.webkitAppRegion = 'no-drag';
     overlay.style.webkitAppRegion = 'no-drag';
     modal.style.webkitAppRegion = 'no-drag';
-    
+
     // Capture keyboard
     const handleKeyPress = (e) => {
         if (!isCapturing) return;
-        
+
         let key = e.key.length === 1 ? e.key.toUpperCase() : e.key;
-        
+
         if (['Meta'].includes(key)) return;
-        
+
         e.preventDefault();
         e.stopPropagation();
-        
+
         capturedKey = key;
         keyType = "keyboard";
         displayKey.textContent = key;
@@ -805,22 +805,22 @@ function showSetHotkeyModal() {
         hint.textContent = "Key captured! Click Save to confirm.";
         hint.style.color = "#6ef5b8";
     };
-    
+
     // Capture mouse
     const handleMouseDown = (e) => {
         if (!isCapturing) return;
-        
+
         // Allow clicks on modal buttons
         if (e.target.closest('.btn')) {
             return;
         }
-        
+
         e.preventDefault();
         e.stopPropagation();
-        
+
         let buttonName = "";
         let buttonValue = "";
-        
+
         switch(e.button) {
             case 0: 
                 buttonName = "Left Mouse";
@@ -846,7 +846,7 @@ function showSetHotkeyModal() {
                 buttonName = `Mouse ${e.button}`;
                 buttonValue = `button${e.button}`;
         }
-        
+
         capturedKey = buttonValue;
         keyType = "mouse";
         displayKey.textContent = buttonName;
@@ -854,25 +854,25 @@ function showSetHotkeyModal() {
         hint.textContent = "Mouse button captured! Click Save to confirm.";
         hint.style.color = "#6ef5b8";
     };
-    
+
     const preventContext = (e) => {
         if (isCapturing) {
             e.preventDefault();
         }
     };
-    
+
     const preventNav = (e) => {
         if (isCapturing && (e.button === 3 || e.button === 4)) {
             e.preventDefault();
             return false;
         }
     };
-    
+
     document.addEventListener("keydown", handleKeyPress, true);
     document.addEventListener("mousedown", handleMouseDown, true);
     document.addEventListener("contextmenu", preventContext, true);
     document.addEventListener("mouseup", preventNav, true);
-    
+
     const cleanup = () => {
         isCapturing = false;
         document.removeEventListener("keydown", handleKeyPress, true);
@@ -881,21 +881,21 @@ function showSetHotkeyModal() {
         document.removeEventListener("mouseup", preventNav, true);
         document.body.style.webkitAppRegion = '';
     };
-    
+
     modal.querySelector("#hotkey-save-btn").addEventListener("click", async () => {
         if (!capturedKey || !keyType) {
             showNotification('error', 'No Key', 'Press a key or mouse button first');
             return;
         }
-        
+
         cleanup();
-        
+
         try {
             const result = await window.pywebview.api.macro_set_hotkey({
                 type: keyType,
                 value: capturedKey
             });
-            
+
             if (result.success) {
                 document.getElementById("keybind-display").textContent = result.hotkey;
                 showNotification('success', 'Hotkey Set', result.message);
@@ -908,12 +908,12 @@ function showSetHotkeyModal() {
             showNotification('error', 'Error', 'Failed to set hotkey');
         }
     });
-    
+
     modal.querySelector("#hotkey-cancel-btn").addEventListener("click", () => {
         cleanup();
         overlay.remove();
     });
-    
+
     overlay.addEventListener("click", (e) => {
         if (e.target === overlay) {
             cleanup();
@@ -929,12 +929,12 @@ function setupButtons() {
     if (addNewBtn) {
         addNewBtn.addEventListener("click", showAddNewModal);
     }
-    
+
     // All other buttons
     const buttons = document.querySelectorAll(".btn-ghost");
     buttons.forEach(btn => {
         const text = btn.textContent.trim();
-        
+
         if (text === "Profiles") {
             btn.addEventListener("click", showProfilesModal);
         } else if (text === "Advanced Settings") {
@@ -946,7 +946,7 @@ function setupButtons() {
                     showNotification('warning', 'No Selection', 'Please select flags to delete');
                     return;
                 }
-                
+
                 try {
                     for (const row of selected) {
                         const flagName = row.querySelector(".flag-name").textContent;
@@ -1030,7 +1030,7 @@ function setupButtons() {
     if (setHotkeyBtn) {
         setHotkeyBtn.addEventListener("click", showSetHotkeyModal);
     }
-    
+
     // Bottom bar buttons
     const saveLaunchBtn = document.querySelector('.btn-bottom-primary');
     if (saveLaunchBtn) {
@@ -1045,7 +1045,7 @@ function setupButtons() {
                 } else {
                     showNotification('success', 'Launching', 'Applying flags and launching Roblox...');
                 }
-                
+
                 await window.pywebview.api.save_and_launch();
             } catch (err) {
                 console.error("Error launching:", err);
@@ -1053,23 +1053,23 @@ function setupButtons() {
             }
         });
     }
-    
+
     const bottomButtons = document.querySelectorAll('.btn-bottom-secondary');
     bottomButtons.forEach(btn => {
         const text = btn.textContent.trim();
-        
+
         if (text === 'Save') {
             btn.addEventListener('click', async () => {
                 try {
                     const status = await window.pywebview.api.get_roblox_status();
-                    
+
                     if (status === 'attached') {
                         // Clean invalid flags first
                         const cleanResult = await window.pywebview.api.validate_and_clean_flags();
                         if (cleanResult.removed_count > 0) {
                             await loadFlags();
                         }
-                        
+
                         // Then apply
                         await window.pywebview.api.apply_flags_now();
                         showNotification('success', 'Saved & Applied', 
