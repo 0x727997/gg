@@ -630,7 +630,7 @@ function showAddNewModal() {
                 showNotification('error', 'Invalid Input', 'Please fill in both name and value');
             }
         } else {
-            // UPDATED IMPORT JSON SECTION
+            // FIXED IMPORT JSON SECTION
             const json = modal.querySelector("#json-import-input").value;
             
             if (json) {
@@ -642,9 +642,11 @@ function showAddNewModal() {
                         await loadFlags();
                         
                         // Show detailed import result
+                        const removedCount = result.validation?.removed_count || 0;
                         let message = `Imported ${result.imported} flag(s)`;
-                        if (result.validation && result.validation.removed_count > 0) {
-                            message += `, removed ${result.validation.removed_count} invalid flag(s)`;
+                        
+                        if (removedCount > 0) {
+                            message += `, removed ${removedCount} invalid flag(s)`;
                             showNotification('warning', 'Flags Imported', message);
                         } else {
                             showNotification('success', 'Flags Imported', message);
