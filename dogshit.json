@@ -8073,7 +8073,7 @@
   "DFIntPerformanceControlSoundLatencySecondSegmentUtility": "0x6778ef8",
   "DFIntPerformanceControlSoundLatencyThirdSegmentUtility": "0x6778f00",
   "DFLogCrashMetricStorage": "0x67D2310",
-  "DFFlagRenderUseTextureManager224": "False"
+  "DFFlagRenderUseTextureManager224": "0x67D2310"
   "DFIntCrashMetricExponentialAverageDecayFactorHundredths": "0x6778f48",
   "DFIntCrashMetricBufferClearThresholdSeconds": "0x6778f34",
   "DFIntFreeOsMemConstantBufferBytes": "0x6778f30",
