@@ -9376,7 +9376,7 @@
   "DFFlagPerfDataSetInitialValueOptional": "0x67ef750",
   "DFFlagEnablePerfPlaytestId": "0x67ef770",
   "DFFlagEnablePerfDataGatherTelemetry2": "0x67ef968",
-  "FFlagEnablePowerTraceModule": "True",
+  "FFlagEnablePowerTraceModule": "0x678CB00",
   "DFFlagEnablePerfDataReportThermals": "0x67ef7a0",
   "FIntProfileTelemetryTickRateMs": "0x6783d10",
   "FFlagEnableImmediateSendingToHive": "0x67ef958",
