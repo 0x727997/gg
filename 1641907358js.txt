@@ -643,7 +643,10 @@ function showAddNewModal() {
                         
                         // Show detailed import result
                         const removedCount = result.validation?.removed_count || 0;
-                        let message = `Imported ${result.imported} flag(s)`;
+                        const totalInJson = result.total_in_json || result.imported;
+                        const actualImported = result.imported;
+                        
+                        let message = `Imported ${actualImported} valid flag(s)`;
                         
                         if (removedCount > 0) {
                             message += `, removed ${removedCount} invalid flag(s)`;
