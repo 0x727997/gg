@@ -7,6 +7,7 @@
 namespace FFlags
 {
     inline uintptr_t ACEAnimationFromVideoCreatorServiceWithAssetImport = 0x77E0158;
+    inline uintptr_t InterpolationAwareTargetTimeLerpHundredth = 0x684CADC;
     inline uintptr_t ADS4948SendUniverseIdToEventStream = 0x78215A8;
     inline uintptr_t AECRingBufferSizeTenthsMs = 0x6A029BC;
     inline uintptr_t AEGIS2ActivateEnableChatButtonTelemetry = 0x779F2D8;
